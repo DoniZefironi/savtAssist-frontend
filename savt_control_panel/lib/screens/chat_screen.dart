@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/gradient_scaffold.dart';
@@ -137,35 +136,35 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _pickImageAndSend() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) await _uploadAndSendFile(image.path, 'image');
+    if (image != null) await _uploadAndSendFile(image, 'image');
   }
 
   Future<void> _pickFileAndSend() async {
     final picker = ImagePicker();
     final file = await picker.pickMedia();
-    if (file != null) await _uploadAndSendFile(file.path, 'file');
+    if (file != null) await _uploadAndSendFile(file, 'file');
   }
 
   Future<void> _pickAudioAndSend() async {
     final picker = ImagePicker();
     final audio = await picker.pickMedia();
     if (audio != null) {
-      final ext = audio.path.split('.').last.toLowerCase();
+      final ext = audio.name.split('.').last.toLowerCase();
       if (['m4a', 'mp3', 'wav', 'ogg', 'aac'].contains(ext)) {
-        await _uploadAndSendFile(audio.path, 'voice');
+        await _uploadAndSendFile(audio, 'voice');
       } else {
         _showError('Выберите аудиофайл (mp3, m4a, wav, ogg)');
       }
     }
   }
 
-  Future<void> _uploadAndSendFile(String path, String type) async {
+  Future<void> _uploadAndSendFile(XFile xFile, String type) async {
     setState(() => _isUploading = true);
     try {
       final url = type == 'voice'
-          ? await uploadService.uploadVoice(path)
-          : await uploadService.uploadAttachment(path);
-      final fileName = path.split('/').last;
+          ? await uploadService.uploadVoice(xFile)
+          : await uploadService.uploadAttachment(xFile);
+      final fileName = xFile.name;
       final attachments = [
         {
           'url': url,
@@ -242,7 +241,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return GradientScaffold(
       appBarTitle: 'Чат',
       appBarLeading: IconButton(
@@ -361,7 +359,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               : theme.colorScheme.onSurfaceVariant)),
                   if (isOwn) ...[
                     const SizedBox(width: 4),
-                    Icon(Icons.done_all, size: 12, color: Colors.white70)
+                    const Icon(Icons.done_all, size: 12, color: Colors.white70)
                   ],
                 ],
               ),

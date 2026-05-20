@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
 import 'api_client.dart';
 import 'offline_service.dart';
+import '../utils/file_download.dart';
 
 class KnowledgeService {
   final ApiClient _apiClient;
@@ -73,12 +71,7 @@ class KnowledgeService {
         options: Options(responseType: ResponseType.bytes),
       );
       final bytes = response.data as List<int>;
-      final fileName =
-          'kb_attachment_$attachmentId.pdf'; // при необходимости можно получить имя из API
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsBytes(bytes);
-      await OpenFile.open(file.path);
+      await saveAndOpenFile(bytes, 'kb_attachment_$attachmentId.pdf');
     } on DioException catch (e) {
       throw _handleError(e);
     }

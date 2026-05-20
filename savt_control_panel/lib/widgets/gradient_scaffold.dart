@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import '../services/network_service.dart';
 import 'animated_background.dart';
-import 'responsive_layout.dart';
 
 class GradientScaffold extends StatelessWidget {
   final String? appBarTitle;

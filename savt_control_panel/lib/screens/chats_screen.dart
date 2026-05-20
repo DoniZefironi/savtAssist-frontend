@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../widgets/gradient_scaffold.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/animated_card.dart';
@@ -14,7 +13,7 @@ class ChatsScreen extends StatefulWidget {
 }
 
 class _ChatsScreenState extends State<ChatsScreen> {
-  int _currentIndex = 2;
+  final int _currentIndex = 2;
   String _searchQuery = '';
   bool _isSearchExpanded = false;
   final FocusNode _searchFocusNode = FocusNode();

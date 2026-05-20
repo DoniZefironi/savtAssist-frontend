@@ -43,6 +43,19 @@ late FavoritesService favoritesService;
 late ServiceRequestService serviceRequestService;
 
 void main() async {
+  // ДИАГНОСТИКА: минимальный тест рендера
+  runApp(const MaterialApp(
+    home: Scaffold(
+      backgroundColor: Color(0xFFFF0000),
+      body: Center(
+        child: Text('FLUTTER WORKS',
+            style: TextStyle(fontSize: 32, color: Colors.white)),
+      ),
+    ),
+  ));
+  return;
+
+  // ignore: dead_code
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
@@ -55,7 +68,8 @@ void main() async {
     knowledgeService = KnowledgeService(apiClient);
     favoritesService = FavoritesService(apiClient);
     serviceRequestService = ServiceRequestService(apiClient);
-    await favoritesService.loadFavorites();
+    // fire-and-forget: не блокируем запуск, сервер может быть недоступен
+    favoritesService.loadFavorites();
     OfflineService().start();
 
     // Запуск приложения
@@ -165,7 +179,7 @@ class ControlPanelApp extends StatelessWidget {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(24))),
       ),
-      dividerTheme: DividerThemeData(color: outline, space: 1),
+      dividerTheme: const DividerThemeData(color: outline, space: 1),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFFF1F5F9),
@@ -212,8 +226,9 @@ class ControlPanelApp extends StatelessWidget {
           return const Color(0xFF94A3B8);
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected))
+          if (states.contains(WidgetState.selected)) {
             return primary.withOpacity(0.35);
+          }
           return const Color(0xFFD1D5DB);
         }),
       ),
@@ -279,7 +294,7 @@ class ControlPanelApp extends StatelessWidget {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(24))),
       ),
-      dividerTheme: DividerThemeData(color: outline, space: 1),
+      dividerTheme: const DividerThemeData(color: outline, space: 1),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFF151F2E),
@@ -326,8 +341,9 @@ class ControlPanelApp extends StatelessWidget {
           return const Color(0xFF64748B);
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected))
+          if (states.contains(WidgetState.selected)) {
             return primary.withOpacity(0.35);
+          }
           return const Color(0xFF2A3A4D);
         }),
       ),
@@ -361,19 +377,19 @@ class ControlPanelApp extends StatelessWidget {
           builder: (context, child) {
             return ValueListenableBuilder<bool>(
               valueListenable: NetworkService.isOnlineNotifier,
-              builder: (context, isOnline, child) {
+              builder: (context, isOnline, innerChild) {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (!isOnline)
                       Container(
-                        width: double.infinity,
                         color: Colors.orange.shade100,
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: const Text('Нет подключения к интернету',
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 13)),
                       ),
-                    Expanded(child: child!),
+                    Expanded(child: innerChild ?? const SizedBox.shrink()),
                   ],
                 );
               },
@@ -402,9 +418,9 @@ class ControlPanelApp extends StatelessWidget {
               case '/auth':
                 return _buildRoute(const AuthPage());
               case '/forgot-password':
-                return _buildRoute(ForgotPasswordScreen());
+                return _buildRoute(const ForgotPasswordScreen());
               case '/change-password':
-                return _buildRoute(ChangePasswordScreen());
+                return _buildRoute(const ChangePasswordScreen());
               case '/edit-profile':
                 return _buildRoute(const EditProfileScreen());
               case '/favorites':

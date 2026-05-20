@@ -14,9 +14,8 @@
 
   <title>SAVT Assist</title>
   <link rel="manifest" href="manifest.json">
-  
+
   <script>
-    // Service worker for offline support
     if ('serviceWorker' in navigator) {
       window.addEventListener('flutter-first-frame', function () {
         navigator.serviceWorker.register('flutter_service_worker.js');

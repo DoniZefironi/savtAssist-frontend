@@ -124,8 +124,8 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   Future<bool> _showCodeVerificationDialog(String phone) async {
     final codeController = TextEditingController();
     final theme = Theme.of(context);
-    int _resendSeconds = 60;
-    bool _canResend = false;
+    int resendSeconds = 60;
+    bool canResend = false;
 
     return await showDialog<bool>(
           context: context,
@@ -133,7 +133,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
           builder: (context) {
             return StatefulBuilder(
               builder: (context, setStateDialog) {
-                if (_resendSeconds == 60 && !_canResend) {
+                if (resendSeconds == 60 && !canResend) {
                   Future.delayed(Duration.zero, () {
                     Timer.periodic(const Duration(seconds: 1), (timer) {
                       if (!mounted) {
@@ -141,10 +141,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                         return;
                       }
                       setStateDialog(() {
-                        if (_resendSeconds > 0) {
-                          _resendSeconds--;
+                        if (resendSeconds > 0) {
+                          resendSeconds--;
                         } else {
-                          _canResend = true;
+                          canResend = true;
                           timer.cancel();
                         }
                       });
@@ -193,13 +193,13 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 8),
                         TextButton(
-                          onPressed: _canResend
+                          onPressed: canResend
                               ? () async {
                                   try {
                                     await authService.resendRegisterCode(phone);
                                     setStateDialog(() {
-                                      _resendSeconds = 60;
-                                      _canResend = false;
+                                      resendSeconds = 60;
+                                      canResend = false;
                                     });
                                   } catch (e) {
                                     _showErrorSnackBar(e.toString());
@@ -207,9 +207,9 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                                 }
                               : null,
                           child: Text(
-                            _canResend
+                            canResend
                                 ? 'Отправить повторно'
-                                : 'Повторно через $_resendSeconds сек',
+                                : 'Повторно через $resendSeconds сек',
                             style: TextStyle(color: theme.colorScheme.primary),
                           ),
                         ),
@@ -556,7 +556,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
             alignment: Alignment.centerRight,
             child: TextButton(
                 onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => ForgotPasswordScreen())),
+                    MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
                 child: Text('Забыли пароль?',
                     style: TextStyle(
                         fontSize: 13,

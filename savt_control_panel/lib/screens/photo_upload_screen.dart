@@ -1,8 +1,7 @@
-// lib/screens/photo_upload_screen.dart
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import '../main.dart'; // uploadService, cabinetService
+import '../main.dart';
 
 class PhotoUploadScreen extends StatefulWidget {
   const PhotoUploadScreen({super.key});
@@ -14,7 +13,8 @@ class PhotoUploadScreen extends StatefulWidget {
 class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   final TextEditingController _objectNumberController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
-  File? _selectedImage;
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
   bool _isLoading = false;
   bool _isUploading = false;
 
@@ -22,12 +22,19 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, maxWidth: 1200);
     if (picked != null) {
-      setState(() => _selectedImage = File(picked.path));
+      final bytes = await picked.readAsBytes();
+      setState(() {
+        _selectedImage = picked;
+        _selectedImageBytes = bytes;
+      });
     }
   }
 
   Future<void> _removeImage() async {
-    setState(() => _selectedImage = null);
+    setState(() {
+      _selectedImage = null;
+      _selectedImageBytes = null;
+    });
   }
 
   Future<void> _submitForReview() async {
@@ -44,19 +51,15 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Загружаем фото на сервер
       setState(() => _isUploading = true);
-      final photoUrl =
-          await uploadService.uploadAttachment(_selectedImage!.path);
+      final photoUrl = await uploadService.uploadAttachment(_selectedImage!);
       setState(() => _isUploading = false);
 
-      // 2. Отправляем заявку на модерацию
       await cabinetService.addCabinetByPhoto(
         photoUrl,
         userComment: _commentController.text.trim(),
       );
 
-      // 3. Показываем успех
       if (mounted) {
         await showDialog(
           context: context,
@@ -132,10 +135,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF054582).withOpacity(0.1),
+                color: const Color(0xFF054582).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
-                border:
-                    Border.all(color: const Color(0xFF054582).withOpacity(0.2)),
+                border: Border.all(
+                    color: const Color(0xFF054582).withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -163,8 +166,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: theme.brightness == Brightness.dark
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.08),
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.08),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -207,7 +210,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                           fontWeight: FontWeight.w500,
                           color: theme.colorScheme.onSurface)),
                   const SizedBox(height: 12),
-                  if (_selectedImage == null) ...[
+                  if (_selectedImageBytes == null) ...[
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -241,10 +244,12 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                         borderRadius: BorderRadius.circular(14),
                         child: Stack(
                           children: [
-                            Image.file(_selectedImage!,
-                                height: 200,
-                                width: double.infinity,
-                                fit: BoxFit.cover),
+                            Image.memory(
+                              _selectedImageBytes!,
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                             Positioned(
                               top: 8,
                               right: 8,

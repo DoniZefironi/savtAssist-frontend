@@ -1,8 +1,6 @@
 // lib/screens/shu_detail_screen.dart
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
+import '../utils/file_download.dart';
 import '../widgets/gradient_scaffold.dart';
 import '../widgets/animated_card.dart';
 import '../widgets/secure_image.dart';
@@ -86,9 +84,8 @@ class _ShuDetailScreenState extends State<ShuDetailScreen>
 
   Future<void> _downloadDocument(String url, String fileName) async {
     try {
-      // Извлекаем docId из URL (предполагается формат /documents/{id}/download)
       final parts = url.split('/');
-      final docId = int.tryParse(parts[parts.length - 2] ?? parts.last);
+      final docId = int.tryParse(parts[parts.length - 2]);
 
       if (docId == null) {
         _showError('Не удалось определить ID документа');
@@ -97,21 +94,10 @@ class _ShuDetailScreenState extends State<ShuDetailScreen>
 
       setState(() => _loadingDocs = true);
 
-      // Скачиваем файл с авторизацией
       final bytes = await cabinetService.downloadDocumentWithAuth(docId);
-
-      final directory = await getApplicationDocumentsDirectory();
-      final savePath = '${directory.path}/$fileName';
-      final file = File(savePath);
-      await file.writeAsBytes(bytes);
+      await saveAndOpenFile(bytes, fileName);
 
       setState(() => _loadingDocs = false);
-
-      // Открываем файл
-      final result = await OpenFile.open(savePath);
-      if (result.type != ResultType.done) {
-        _showError('Не удалось открыть файл: ${result.message}');
-      }
     } catch (e) {
       setState(() => _loadingDocs = false);
       _showError('Не удалось загрузить или открыть файл: $e');

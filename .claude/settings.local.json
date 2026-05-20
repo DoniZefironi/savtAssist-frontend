@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(Select-String -Pattern \"^\\\\s+error\")",
+      "PowerShell(cd \"c:\\\\Users\\\\ShaboldaV\\\\Documents\\\\GitHub\\\\savtAssist-frontend\\\\savt_control_panel\"; flutter analyze 2>&1 | Where-Object { $_ -match \"^\\\\s+error\" })",
+      "Bash(flutter build *)",
+      "Bash(flutter --version)",
+      "Bash(flutter run *)"
+    ]
+  }
+}
